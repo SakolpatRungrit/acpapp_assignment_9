@@ -25,16 +25,14 @@ async def disconnect_db():
 
 
 async def setup_db():
-    await database.execute(
-        """
+    await database.execute("""
         CREATE TABLE IF NOT EXISTS users (
             email VARCHAR(255) PRIMARY KEY,
             password TEXT NOT NULL,
             token TEXT,
             create_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
-        """
-    )
+        """)
 
     demo_password = bcrypt.hashpw(b"password", bcrypt.gensalt()).decode("utf-8")
     await database.execute(
@@ -58,4 +56,21 @@ async def update_user_token(email: str, token: str):
     await database.execute(
         "UPDATE users SET token = :token WHERE email = :email",
         {"email": email, "token": token},
+    )
+
+
+async def create_user(email: str, password_hash: str):
+    """
+    Insert a new user into the users table.
+    `password_hash` should already be a bcrypt hash (str or bytes).
+    """
+    if isinstance(password_hash, bytes):
+        password_hash = password_hash.decode("utf-8")
+
+    await database.execute(
+        """
+        INSERT INTO users (email, password)
+        VALUES (:email, :password)
+        """,
+        {"email": email, "password": password_hash},
     )

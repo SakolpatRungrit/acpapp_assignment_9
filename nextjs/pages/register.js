@@ -12,20 +12,27 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-export default function Login() {
+export default function Register() {
   const router = useRouter();
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,7 +42,7 @@ export default function Login() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.detail || "Login failed");
+        throw new Error(data.detail || "Registration failed");
       }
 
       const data = await response.json();
@@ -53,9 +60,9 @@ export default function Login() {
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Log in</CardTitle>
+          <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Use your email and password to access the starter application.
+            Sign up with your email and password to get started.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -83,7 +90,24 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                autoComplete="current-password"
+                autoComplete="new-password"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="confirmPassword"
+                className="text-sm font-medium"
+              >
+                Confirm Password
+              </label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                autoComplete="new-password"
                 required
               />
             </div>
@@ -91,17 +115,13 @@ export default function Login() {
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Log in"}
-            </Button>
-
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/">Back to landing page</Link>
+              {loading ? "Creating account..." : "Create account"}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="font-medium underline">
-                Register
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium underline">
+                Log in
               </Link>
             </p>
           </form>
